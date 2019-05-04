@@ -9,6 +9,8 @@ class OpticalCharacterRecognition:
     def __init__(self, file_path):
         # invert image!
         self.image = scipy.ndimage.imread(file_path, mode='L')
+        # inversion
+        self.image = 255 - self.image
         # TO DO -> load patterns
         self.letters_positions = {}
 
@@ -20,4 +22,11 @@ class OpticalCharacterRecognition:
         plt.imshow(image)
         plt.show()
 
+    def get_letter_position(self):
+        pass
 
+    def remove_letter(self):
+        pass
+
+    def get_letters_match(self):
+        pass
