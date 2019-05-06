@@ -6,30 +6,27 @@ import string
 
 
 class OpticalCharacterRecognition:
-    def __init__(self, file_path, order=None):
+    def __init__(self, file_path, order=None, serif=False):
         self.image = scipy.ndimage.imread(file_path, mode='I')
         self.print_image()
         self.letters_positions = {}
         self.patterns = self.letters_patterns()
         if order is None:
-            self.order = [('x', 1), ('z', -5), ('w', 1), ('y', 1), ('f', 1), ('k', 1), ('g', 8),
+            self.order = [('z', 1), ('x', 1), ('w', 1), ('y', 1), ('f', 1), ('k', 1), ('g', 8),
                           ('b', 2), ('p', 8), ('m', 1), ('a', 1), ('t', 5), ('u', 10), ('s', 1),
                           ('j', 2), ('v', 2), ('h', 2), ('q', 12), ('d', 8), ('l', 8), ('e', 8),
-                          ('n', 3), ('r', 3), ('i', 4), ('o', 8), ('c', 10)
-                          # (':', 1), (',', 1),
-                          # ('.', 1)
-                          ]
+                          ('n', 3), ('r', 3), ('i', 4), ('o', 8), ('c', 10), (',', 10), (':', 16), ('.', 16)]
         else:
             self.order = order
 
     def letters_patterns(self):
-        path = 'data/'
+        path = 'data/default/'
         letter_patterns = {}
         for letter in string.ascii_lowercase:
             letter_patterns[letter] = self.invertImage(scipy.ndimage.imread(path + letter + '.bmp', mode='I'))
-        # letter_patterns[':'] = self.invertImage(scipy.ndimage.imread(path + 'colon' + '.bmp', mode='I'))
-        # letter_patterns[','] = self.invertImage(scipy.ndimage.imread(path + 'comma' + '.bmp', mode='I'))
-        # letter_patterns['.'] = self.invertImage(scipy.ndimage.imread(path + 'dot' + '.bmp', mode='I'))
+        letter_patterns[':'] = self.invertImage(scipy.ndimage.imread(path + 'colon' + '.bmp', mode='I'))
+        letter_patterns[','] = self.invertImage(scipy.ndimage.imread(path + 'comma' + '.bmp', mode='I'))
+        letter_patterns['.'] = self.invertImage(scipy.ndimage.imread(path + 'dot' + '.bmp', mode='I'))
         return letter_patterns
 
     def get_correlation(self, image, pattern, extra=0.0, coefficient=0.87):
@@ -92,6 +89,7 @@ class OpticalCharacterRecognition:
 
 if __name__ == '__main__':
 
+    # frequency order -> worst than default
     def get_letter_order(text):
         order_map = {}
         for l in text:
@@ -116,8 +114,8 @@ if __name__ == '__main__':
         print("success rate: ", float(score / predefined_len))
 
 
-    text = "sample text created in order to test ocr program some pangram jived fox nymph grabs quick waltz"
-    ocr = OpticalCharacterRecognition('data\sample_text.png', None)
+    text = "sample text created in order to test ocr program, some pangram: jived fox nymph grabs quick waltz."
+    ocr = OpticalCharacterRecognition('data/default/sample_text.png', None)
     ocr.get_letters_match()
     ocr.print_image()
     result = ocr.to_text()
