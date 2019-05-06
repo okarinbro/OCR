@@ -11,6 +11,10 @@ class OpticalCharacterRecognition:
         self.print_image()
         self.letters_positions = {}
         self.patterns = self.letters_patterns()
+        if not serif:
+            self.path = 'data/default/'
+        else:
+            self.path = 'data/serif/'
         if order is None:
             self.order = [('z', 1), ('x', 1), ('w', 1), ('y', 1), ('f', 1), ('k', 1), ('g', 8),
                           ('b', 2), ('p', 8), ('m', 1), ('a', 1), ('t', 5), ('u', 10), ('s', 1),
