@@ -6,31 +6,37 @@ import string
 
 
 class OpticalCharacterRecognition:
-    def __init__(self, file_path, order):
+    def __init__(self, file_path, order=None):
         self.image = scipy.ndimage.imread(file_path, mode='I')
         self.print_image()
         self.letters_positions = {}
         self.patterns = self.letters_patterns()
-        self.order = [('x', 1), ('z', 1), ('w', 1), ('y', 1), ('f', 1), ('k', 1), ('g', 8),
-                      ('b', 2), ('p', 8), ('m', 1), ('a', 1), ('t', 5), ('u', 10), ('s', 1),
-                      ('j', 2), ('v', 2), ('h', 2), ('q', 12), ('d', 8), ('l', 8), ('e', 8),
-                      ('n', 3), ('r', 3), ('i', 4), ('o', 8), ('c', 10)]
+        if order is None:
+            self.order = [('x', 1), ('z', -5), ('w', 1), ('y', 1), ('f', 1), ('k', 1), ('g', 8),
+                          ('b', 2), ('p', 8), ('m', 1), ('a', 1), ('t', 5), ('u', 10), ('s', 1),
+                          ('j', 2), ('v', 2), ('h', 2), ('q', 12), ('d', 8), ('l', 8), ('e', 8),
+                          ('n', 3), ('r', 3), ('i', 4), ('o', 8), ('c', 10)
+                          # (':', 1), (',', 1),
+                          # ('.', 1)
+                          ]
+        else:
+            self.order = order
 
     def letters_patterns(self):
         path = 'data/'
         letter_patterns = {}
         for letter in string.ascii_lowercase:
             letter_patterns[letter] = self.invertImage(scipy.ndimage.imread(path + letter + '.bmp', mode='I'))
+        # letter_patterns[':'] = self.invertImage(scipy.ndimage.imread(path + 'colon' + '.bmp', mode='I'))
+        # letter_patterns[','] = self.invertImage(scipy.ndimage.imread(path + 'comma' + '.bmp', mode='I'))
+        # letter_patterns['.'] = self.invertImage(scipy.ndimage.imread(path + 'dot' + '.bmp', mode='I'))
         return letter_patterns
 
     def get_correlation(self, image, pattern, extra=0.0, coefficient=0.87):
         coefficient += extra
-        fi = np.fft.fft2(self.invertImage(image))
-        fp = np.fft.fft2(np.rot90(pattern, 2), fi.shape)
-        m = np.multiply(fi, fp)
-        corr = np.fft.ifft2(m)
-        corr = np.abs(corr)
-        corr = corr.astype(float)
+        ffa = np.fft.fft2(self.invertImage(image))
+        mul_product = np.multiply(ffa, np.fft.fft2(np.rot90(pattern, 2), ffa.shape))
+        corr = np.abs(np.fft.ifft2(mul_product)).astype(float)
         corr[corr < coefficient * np.amax(corr)] = 0
         corr[corr != 0] = 254
         return corr
@@ -95,8 +101,25 @@ if __name__ == '__main__':
         return pos
 
 
-    text = "sample text created in order to test ocr program, some pangram: jived fox nymph grabs quick waltz."
-    ocr = OpticalCharacterRecognition('data\sample_text.png', get_letter_order(text))
+    def get_success_percent(text, result):
+        text = ''.join(text.split())
+        result = ''.join(result.split())
+        print('given text: ', text)
+        print('result:', result)
+        i = 0
+        score = 0
+        predefined_len = len(text)
+        while i < len(text) and i < len(result):
+            if text[i] == result[i]:
+                score += 1
+            i += 1
+        print("success rate: ", float(score / predefined_len))
+
+
+    text = "sample text created in order to test ocr program some pangram jived fox nymph grabs quick waltz"
+    ocr = OpticalCharacterRecognition('data\sample_text.png', None)
     ocr.get_letters_match()
     ocr.print_image()
-    print(ocr.to_text())
+    result = ocr.to_text()
+    print('result: ', result)
+    get_success_percent(text, result)
